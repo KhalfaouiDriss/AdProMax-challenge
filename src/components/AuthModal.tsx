@@ -171,7 +171,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </button>
           </form>
 
-          <div className="text-center pt-2 border-t border-[#d8d8d8]">
+          {/* <div className="text-center pt-2 border-t border-[#d8d8d8]">
             <button
               type="button"
               onClick={() => {
@@ -183,7 +183,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               {isSignUp
                 ? "Already an operator? Sign in"
                 : "Need a new account? Register"}
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
