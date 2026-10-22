@@ -1,0 +1,227 @@
+﻿@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --primary: #080808;
+  --on-primary: #ffffff;
+  --ink: #080808;
+  --ink-strong: #222222;
+  --body: #363636;
+  --body-mid: #5a5a5a;
+  --mute: #898989;
+  --mute-soft: #ababab;
+  --hairline: #d8d8d8;
+  --canvas: #ffffff;
+
+  --accent-purple: #7a3dff;
+  --accent-pink: #ed52cb;
+  --accent-blue: #3b89ff;
+  --accent-blue-deep: #006acc;
+  --accent-blue-info: #146ef5;
+  --accent-orange: #ff6b00;
+  --accent-green: #00d722;
+  --accent-yellow: #ffae13;
+  --accent-red: #ee1d36;
+
+  --shadow-level-1: 0 1px 2px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.1);
+  --shadow-level-2: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --shadow-level-3: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  --shadow-level-4: 0 24px 24px rgba(0,0,0,0.18), 0 6px 13px rgba(0,0,0,0.12);
+}
+
+body {
+  background-color: var(--canvas);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -0.16px;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile Safe Areas */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+/* Webflow Canonical Components */
+.wf-btn-primary {
+  background-color: var(--primary);
+  color: var(--on-primary);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 18px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 150ms ease;
+  border: 1px solid transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.wf-btn-primary:hover {
+  background-color: #222222;
+}
+.wf-btn-primary:active {
+  transform: scale(0.98);
+}
+.wf-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.wf-btn-secondary {
+  background-color: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 18px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 150ms ease;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.wf-btn-secondary:hover {
+  background-color: #f7f7f7;
+  border-color: #b0b0b0;
+}
+.wf-btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.wf-btn-danger {
+  background-color: #fff0f1;
+  color: var(--accent-red);
+  border: 1px solid #ffd0d5;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 14px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 150ms ease;
+  cursor: pointer;
+}
+.wf-btn-danger:hover {
+  background-color: #ffe0e4;
+}
+
+.wf-input {
+  background-color: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 15px;
+  min-height: 42px;
+  transition: border-color 150ms ease;
+  width: 100%;
+}
+.wf-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.wf-card {
+  background-color: var(--canvas);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: var(--shadow-level-1);
+  transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+@media (min-width: 640px) {
+  .wf-card {
+    padding: 24px;
+  }
+}
+.wf-card:hover {
+  box-shadow: var(--shadow-level-2);
+}
+
+.wf-card-featured {
+  background-color: var(--canvas);
+  border: 1px solid #c8c8c8;
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: var(--shadow-level-2);
+}
+@media (min-width: 640px) {
+  .wf-card-featured {
+    padding: 24px;
+  }
+}
+
+.wf-badge {
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 550;
+  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.wf-badge-info {
+  background-color: var(--accent-blue-info);
+  color: #ffffff;
+}
+
+.wf-badge-soft {
+  background-color: #f2f7ff;
+  color: var(--accent-blue-info);
+  border: 1px solid #d4e4fc;
+}
+
+.wf-badge-success {
+  background-color: #eafaf0;
+  color: #0b8e23;
+  border: 1px solid #b7edc5;
+}
+
+.wf-badge-warning {
+  background-color: #fff9ea;
+  color: #b57400;
+  border: 1px solid #ffe1a6;
+}
+
+.wf-badge-danger {
+  background-color: #fff0f1;
+  color: var(--accent-red);
+  border: 1px solid #ffd0d5;
+}
+
+/* Custom Leaflet Map styling for sleek aesthetic */
+.leaflet-container {
+  font-family: inherit;
+  z-index: 10;
+  border-radius: 8px;
+  touch-action: pan-x pan-y;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 6px !important;
+  box-shadow: var(--shadow-level-3) !important;
+  border: 1px solid var(--hairline);
+  padding: 0 !important;
+  overflow: hidden;
+}
+.leaflet-popup-content {
+  margin: 10px 14px !important;
+  line-height: 1.4 !important;
+  font-size: 13px !important;
+  color: var(--ink) !important;
+}
