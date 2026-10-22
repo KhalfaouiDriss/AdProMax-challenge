@@ -241,10 +241,17 @@ For evaluation and testing, you can use the built-in demo credentials or click *
 
 ## 🤖 AI Tools & Workflow
 
-This project was architected and built using:
-- **Antigravity AI Agentic Assistant**: Guided pair programming, interactive requirements alignment (`/grill-me`), system design synthesis, and code implementation.
-- **Geospatial Algorithm Synthesis**: Precise implementation of the Haversine great-circle distance algorithm for zero-dependency point-in-zone verification.
-- **Autonomous Browser Testing**: Automated headless browser testing (`browser_subagent`) to validate mobile responsiveness, interactive map interactions, and form states.
+This project was architected, engineered, and polished using an agentic AI pair programming workflow:
+
+- **Gemini Flash (Antigravity AI Agent)**:
+  - **System Architecture & Design**: Scaffolding the Next.js 16 App Router application, TypeScript geospatial data models, and database relations.
+  - **Interactive Requirements Alignment (`/grill-me`)**: Walking down each branch of the product design tree to specify role models, map interactions, and deployment flows.
+  - **Geospatial Engine**: Synthesis of the zero-dependency Haversine great-circle boundary validation engine with dynamic radius checking and nearest-zone diagnostics.
+  - **Webflow Design Language**: Translating the design specifications from `design.md` into a responsive, mobile-first design system with custom tokens and tight 4px geometry.
+  - **Autonomous Browser Verification**: Headless browser automation (`browser_subagent`) to validate map rendering, mobile drawers, and responsive viewports.
+
+- **OpenCode & Nemotron 3 Ultra**:
+  - **Micro-Tasks & Routines**: Executing focused subroutines, targeted refactors, string utilities, and fine-grained code cleanup across helper scripts.
 
 ---
 

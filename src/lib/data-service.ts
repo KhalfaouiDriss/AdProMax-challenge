@@ -41,6 +41,12 @@ export const DataService = {
     }
   },
 
+  // Initialize: clear stale localStorage and force fresh fetch from Supabase
+  async initialize() {
+    this.clearCachedData();
+    await Promise.all([this.getZones(), this.getProducts(), this.getOrders()]);
+  },
+
   // --- ZONES ---
   async getZones(): Promise<DeliveryZone[]> {
     try {

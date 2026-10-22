@@ -41,6 +41,7 @@ export default function DashboardPage() {
   const loadData = async () => {
     setLoading(true);
     try {
+      await DataService.initialize();
       const [fetchedZones, fetchedProducts, fetchedOrders] = await Promise.all([
         DataService.getZones(),
         DataService.getProducts(),
