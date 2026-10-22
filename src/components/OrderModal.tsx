@@ -22,7 +22,7 @@ interface OrderModalProps {
   zones: DeliveryZone[];
   products: Product[];
   onOrderCreated: (
-    order: Omit<Order, "id" | "created_at">,
+    order: Omit<Order, "id" | "user_id" | "created_at" | "updated_at" | "items">,
     items: OrderItem[]
   ) => Promise<void>;
 }

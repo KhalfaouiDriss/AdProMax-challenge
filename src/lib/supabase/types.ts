@@ -1,5 +1,6 @@
 ﻿export interface DeliveryZone {
   id: string;
+  user_id: string;
   name: string;
   description?: string | null;
   center_lat: number;
@@ -13,6 +14,7 @@
 
 export interface Product {
   id: string;
+  user_id: string;
   name: string;
   description?: string | null;
   price: number;
@@ -44,6 +46,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
+  user_id: string;
   customer_name: string;
   customer_email?: string | null;
   customer_phone?: string | null;

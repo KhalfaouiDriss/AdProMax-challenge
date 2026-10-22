@@ -39,13 +39,13 @@ export default function DashboardPage() {
   const [showSqlNotice, setShowSqlNotice] = useState<boolean>(false);
 
   const loadData = async () => {
+    if (!user) return;
     setLoading(true);
     try {
-      await DataService.initialize();
       const [fetchedZones, fetchedProducts, fetchedOrders] = await Promise.all([
-        DataService.getZones(),
-        DataService.getProducts(),
-        DataService.getOrders(),
+        DataService.getZones(user.id),
+        DataService.getProducts(user.id),
+        DataService.getOrders(user.id),
       ]);
       setZones(fetchedZones);
       setProducts(fetchedProducts);
@@ -59,7 +59,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [user]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -69,89 +69,88 @@ export default function DashboardPage() {
   };
 
   // Zone handlers
-  const handleSaveZone = async (zoneData: Omit<DeliveryZone, "id" | "created_at">) => {
+  const handleSaveZone = async (zoneData: Omit<DeliveryZone, "id" | "user_id" | "created_at" | "updated_at">) => {
+    if (!user) return;
     if (editingZone) {
-      const updated = await DataService.updateZone(editingZone.id, zoneData);
+      const updated = await DataService.updateZone(user.id, editingZone.id, zoneData);
       if (updated) {
         setZones((prev) => prev.map((z) => (z.id === updated.id ? updated : z)));
         showToast(`Zone "${updated.name}" updated successfully.`);
       }
     } else {
-      const created = await DataService.createZone(zoneData);
-      setZones((prev) => [...prev, created]);
-      showToast(`New zone "${created.name}" created and active.`);
+      const created = await DataService.createZone(user.id, zoneData);
+      if (created) setZones((prev) => [...prev, created]);
+      showToast(`New zone "${created?.name}" created and active.`);
     }
     setEditingZone(null);
   };
 
   const handleDeleteZone = async (id: string) => {
-    await DataService.deleteZone(id);
+    if (!user) return;
+    await DataService.deleteZone(user.id, id);
     setZones((prev) => prev.filter((z) => z.id !== id));
     showToast("Delivery zone removed.");
   };
 
   const handleToggleZoneActive = async (zone: DeliveryZone) => {
+    if (!user) return;
     const nextState = !zone.is_active;
-    const updated = await DataService.updateZone(zone.id, { is_active: nextState });
+    const updated = await DataService.updateZone(user.id, zone.id, { is_active: nextState });
     if (updated) {
       setZones((prev) => prev.map((z) => (z.id === updated.id ? updated : z)));
-      showToast(
-        `Zone "${zone.name}" is now ${nextState ? "operational" : "temporarily paused"}.`
-      );
+      showToast(`Zone "${zone.name}" is now ${nextState ? "operational" : "temporarily paused"}.`);
     }
   };
 
   // Product handlers
   const handleSaveProduct = async (
-    productData: Omit<Product, "id">,
+    productData: Omit<Product, "id" | "user_id" | "created_at" | "updated_at" | "zone_ids">,
     zoneIds: string[]
   ) => {
+    if (!user) return;
     if (editingProduct) {
-      const updated = await DataService.updateProduct(
-        editingProduct.id,
-        productData,
-        zoneIds
-      );
+      const updated = await DataService.updateProduct(user.id, editingProduct.id, productData, zoneIds);
       if (updated) {
         setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
         showToast(`Product "${updated.name}" updated.`);
       }
     } else {
-      const created = await DataService.createProduct(productData, zoneIds);
-      setProducts((prev) => [...prev, created]);
-      showToast(`Product "${created.name}" added to catalog.`);
+      const created = await DataService.createProduct(user.id, productData, zoneIds);
+      if (created) setProducts((prev) => [...prev, created]);
+      showToast(`Product "${created?.name}" added to catalog.`);
     }
     setEditingProduct(null);
   };
 
   const handleDeleteProduct = async (id: string) => {
-    await DataService.deleteProduct(id);
+    if (!user) return;
+    await DataService.deleteProduct(user.id, id);
     setProducts((prev) => prev.filter((p) => p.id !== id));
     showToast("Product deleted from catalog.");
   };
 
   // Order handlers
   const handleOrderCreated = async (
-    orderData: Omit<Order, "id" | "created_at">,
+    orderData: Omit<Order, "id" | "user_id" | "created_at" | "updated_at" | "items">,
     items: OrderItem[]
   ) => {
-    const created = await DataService.createOrder(orderData, items);
-    setOrders((prev) => [created, ...prev]);
+    if (!user) return;
+    const created = await DataService.createOrder(user.id, orderData, items);
+    if (created) setOrders((prev) => [created, ...prev]);
 
     // Refresh products to reflect reduced inventory stock
-    const freshProducts = await DataService.getProducts();
+    const freshProducts = await DataService.getProducts(user.id);
     setProducts(freshProducts);
 
-    showToast(
-      `Order dispatched for ${created.customer_name}! Verified inside delivery zone.`
-    );
+    showToast(`Order dispatched for ${created?.customer_name}! Verified inside delivery zone.`);
   };
 
   const handleUpdateOrderStatus = async (
     orderId: string,
     status: Order["status"]
   ) => {
-    const updated = await DataService.updateOrderStatus(orderId, status);
+    if (!user) return;
+    const updated = await DataService.updateOrderStatus(user.id, orderId, status);
     if (updated) {
       setOrders((prev) => prev.map((o) => (o.id === orderId ? updated : o)));
       showToast(`Order status updated to "${status.replace(/_/g, " ")}".`);

@@ -1,102 +1,50 @@
 ﻿import { supabase } from "./supabase/client";
 import { DeliveryZone, Product, Order, OrderItem } from "./supabase/types";
 
-// Empty initial states - ready for production data
 export const INITIAL_ZONES: DeliveryZone[] = [];
 export const INITIAL_PRODUCTS: Product[] = [];
 export const INITIAL_ORDERS: Order[] = [];
 
-// Local Storage helpers for resilient operation
-function getLocalItem<T>(key: string, defaultVal: T): T {
-  if (typeof window === "undefined") return defaultVal;
-  try {
-    const val = localStorage.getItem(key);
-    return val ? JSON.parse(val) : defaultVal;
-  } catch {
-    return defaultVal;
-  }
-}
-
-function setLocalItem<T>(key: string, val: T): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(key, JSON.stringify(val));
-  } catch (e) {
-    console.error("Storage error:", e);
-  }
-}
-
+// All operations now require user_id for RLS compliance
 export const DataService = {
-  // Clear any existing cached demo/fake data
-  clearCachedData() {
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.removeItem("adpromax_zones");
-        localStorage.removeItem("adpromax_products");
-        localStorage.removeItem("adpromax_orders");
-        localStorage.removeItem("adpromax_seeded");
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  },
-
-  // Initialize: clear stale localStorage and force fresh fetch from Supabase
-  async initialize() {
-    this.clearCachedData();
-    await Promise.all([this.getZones(), this.getProducts(), this.getOrders()]);
-  },
-
   // --- ZONES ---
-  async getZones(): Promise<DeliveryZone[]> {
+  async getZones(userId: string): Promise<DeliveryZone[]> {
     try {
       const { data, error } = await supabase
         .from("delivery_zones")
         .select("*")
+        .eq("user_id", userId)
         .order("created_at", { ascending: true });
 
-      if (error || !data) {
-        return getLocalItem<DeliveryZone[]>("adpromax_zones", []);
-      }
-      setLocalItem("adpromax_zones", data);
-      return data;
-    } catch {
-      return getLocalItem<DeliveryZone[]>("adpromax_zones", []);
+      if (error) throw error;
+      return data || [];
+    } catch (err) {
+      console.error("getZones error:", err);
+      return [];
     }
   },
 
   async createZone(
-    zone: Omit<DeliveryZone, "id" | "created_at">
-  ): Promise<DeliveryZone> {
-    const newZone: DeliveryZone = {
-      ...zone,
-      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-      created_at: new Date().toISOString(),
-    };
-
+    userId: string,
+    zone: Omit<DeliveryZone, "id" | "user_id" | "created_at" | "updated_at">
+  ): Promise<DeliveryZone | null> {
     try {
       const { data, error } = await supabase
         .from("delivery_zones")
-        .insert([newZone])
+        .insert([{ ...zone, user_id: userId }])
         .select()
         .single();
 
-      if (!error && data) {
-        const current = getLocalItem<DeliveryZone[]>("adpromax_zones", []);
-        setLocalItem("adpromax_zones", [...current, data]);
-        return data;
-      }
+      if (error) throw error;
+      return data;
     } catch (err) {
-      console.warn("Using local store for zone insertion:", err);
+      console.error("createZone error:", err);
+      return null;
     }
-
-    const current = getLocalItem<DeliveryZone[]>("adpromax_zones", []);
-    const updated = [...current, newZone];
-    setLocalItem("adpromax_zones", updated);
-    return newZone;
   },
 
   async updateZone(
+    userId: string,
     id: string,
     updates: Partial<DeliveryZone>
   ): Promise<DeliveryZone | null> {
@@ -105,119 +53,88 @@ export const DataService = {
         .from("delivery_zones")
         .update(updates)
         .eq("id", id)
+        .eq("user_id", userId)
         .select()
         .single();
 
-      if (!error && data) {
-        const current = getLocalItem<DeliveryZone[]>("adpromax_zones", []);
-        setLocalItem(
-          "adpromax_zones",
-          current.map((z) => (z.id === id ? data : z))
-        );
-        return data;
-      }
+      if (error) throw error;
+      return data;
     } catch (err) {
-      console.warn("Using local store for zone update:", err);
+      console.error("updateZone error:", err);
+      return null;
     }
-
-    const current = getLocalItem<DeliveryZone[]>("adpromax_zones", []);
-    const index = current.findIndex((z) => z.id === id);
-    if (index === -1) return null;
-    const updatedZone = { ...current[index], ...updates };
-    current[index] = updatedZone;
-    setLocalItem("adpromax_zones", current);
-    return updatedZone;
   },
 
-  async deleteZone(id: string): Promise<boolean> {
+  async deleteZone(userId: string, id: string): Promise<boolean> {
     try {
-      await supabase.from("delivery_zones").delete().eq("id", id);
+      const { error } = await supabase
+        .from("delivery_zones")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", userId);
+
+      if (error) throw error;
+      return true;
     } catch (err) {
-      console.warn("Supabase zone delete:", err);
+      console.error("deleteZone error:", err);
+      return false;
     }
-    const current = getLocalItem<DeliveryZone[]>("adpromax_zones", []);
-    setLocalItem(
-      "adpromax_zones",
-      current.filter((z) => z.id !== id)
-    );
-    return true;
   },
 
   // --- PRODUCTS ---
-  async getProducts(): Promise<Product[]> {
+  async getProducts(userId: string): Promise<Product[]> {
     try {
       const { data: productsData, error } = await supabase
         .from("products")
         .select("*, product_zones(zone_id)")
+        .eq("user_id", userId)
         .order("created_at", { ascending: true });
 
-      if (error || !productsData) {
-        return getLocalItem<Product[]>("adpromax_products", []);
-      }
+      if (error) throw error;
+      if (!productsData) return [];
 
-      const formatted: Product[] = productsData.map((p: any) => ({
+      return productsData.map((p: any) => ({
         ...p,
         zone_ids: p.product_zones ? p.product_zones.map((pz: any) => pz.zone_id) : [],
       }));
-
-      setLocalItem("adpromax_products", formatted);
-      return formatted;
-    } catch {
-      return getLocalItem<Product[]>("adpromax_products", []);
+    } catch (err) {
+      console.error("getProducts error:", err);
+      return [];
     }
   },
 
   async createProduct(
-    product: Omit<Product, "id">,
+    userId: string,
+    product: Omit<Product, "id" | "user_id" | "created_at" | "updated_at" | "zone_ids">,
     zoneIds: string[] = []
-  ): Promise<Product> {
-    const newProduct: Product = {
-      ...product,
-      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-      zone_ids: zoneIds,
-      created_at: new Date().toISOString(),
-    };
-
+  ): Promise<Product | null> {
     try {
       const { data, error } = await supabase
         .from("products")
-        .insert([
-          {
-            id: newProduct.id,
-            name: newProduct.name,
-            description: newProduct.description,
-            price: newProduct.price,
-            stock_quantity: newProduct.stock_quantity,
-            category: newProduct.category,
-            image_url: newProduct.image_url,
-          },
-        ])
+        .insert([{ ...product, user_id: userId }])
         .select()
         .single();
 
-      if (!error && data) {
-        if (zoneIds.length > 0) {
-          const links = zoneIds.map((zId) => ({
-            product_id: data.id,
-            zone_id: zId,
-          }));
-          await supabase.from("product_zones").insert(links);
-        }
-        const current = getLocalItem<Product[]>("adpromax_products", []);
-        const finalP = { ...data, zone_ids: zoneIds };
-        setLocalItem("adpromax_products", [...current, finalP]);
-        return finalP;
-      }
-    } catch (err) {
-      console.warn("Local product insert fallback:", err);
-    }
+      if (error) throw error;
 
-    const current = getLocalItem<Product[]>("adpromax_products", []);
-    setLocalItem("adpromax_products", [...current, newProduct]);
-    return newProduct;
+      if (zoneIds.length > 0) {
+        const links = zoneIds.map((zId) => ({
+          product_id: data.id,
+          zone_id: zId,
+        }));
+        const { error: linkError } = await supabase.from("product_zones").insert(links);
+        if (linkError) console.warn("product_zones link error:", linkError);
+      }
+
+      return { ...data, zone_ids: zoneIds };
+    } catch (err) {
+      console.error("createProduct error:", err);
+      return null;
+    }
   },
 
   async updateProduct(
+    userId: string,
     id: string,
     updates: Partial<Product>,
     zoneIds?: string[]
@@ -227,108 +144,81 @@ export const DataService = {
         .from("products")
         .update(updates)
         .eq("id", id)
+        .eq("user_id", userId)
         .select()
         .single();
 
-      if (!error && data) {
-        if (zoneIds !== undefined) {
-          await supabase.from("product_zones").delete().eq("product_id", id);
-          if (zoneIds.length > 0) {
-            await supabase
-              .from("product_zones")
-              .insert(zoneIds.map((zId) => ({ product_id: id, zone_id: zId })));
-          }
+      if (error) throw error;
+
+      if (zoneIds !== undefined) {
+        await supabase.from("product_zones").delete().eq("product_id", id);
+        if (zoneIds.length > 0) {
+          await supabase
+            .from("product_zones")
+            .insert(zoneIds.map((zId) => ({ product_id: id, zone_id: zId })));
         }
       }
-    } catch (err) {
-      console.warn("Local product update:", err);
-    }
 
-    const current = getLocalItem<Product[]>("adpromax_products", []);
-    const index = current.findIndex((p) => p.id === id);
-    if (index === -1) return null;
-    const updated = {
-      ...current[index],
-      ...updates,
-      ...(zoneIds !== undefined ? { zone_ids: zoneIds } : {}),
-    };
-    current[index] = updated;
-    setLocalItem("adpromax_products", current);
-    return updated;
+      return { ...data, zone_ids: zoneIds ?? data.zone_ids };
+    } catch (err) {
+      console.error("updateProduct error:", err);
+      return null;
+    }
   },
 
-  async deleteProduct(id: string): Promise<boolean> {
+  async deleteProduct(userId: string, id: string): Promise<boolean> {
     try {
-      await supabase.from("products").delete().eq("id", id);
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", userId);
+
+      if (error) throw error;
+      return true;
     } catch (err) {
-      console.warn("Supabase product delete:", err);
+      console.error("deleteProduct error:", err);
+      return false;
     }
-    const current = getLocalItem<Product[]>("adpromax_products", []);
-    setLocalItem(
-      "adpromax_products",
-      current.filter((p) => p.id !== id)
-    );
-    return true;
   },
 
   // --- ORDERS ---
-  async getOrders(): Promise<Order[]> {
+  async getOrders(userId: string): Promise<Order[]> {
     try {
       const { data, error } = await supabase
         .from("orders")
         .select("*, order_items(*)")
+        .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
-      if (error || !data) {
-        return getLocalItem<Order[]>("adpromax_orders", []);
-      }
+      if (error) throw error;
+      if (!data) return [];
 
-      const formatted: Order[] = data.map((o: any) => ({
+      return data.map((o: any) => ({
         ...o,
         items: o.order_items || [],
       }));
-
-      setLocalItem("adpromax_orders", formatted);
-      return formatted;
-    } catch {
-      return getLocalItem<Order[]>("adpromax_orders", []);
+    } catch (err) {
+      console.error("getOrders error:", err);
+      return [];
     }
   },
 
   async createOrder(
-    order: Omit<Order, "id" | "created_at">,
+    userId: string,
+    order: Omit<Order, "id" | "user_id" | "created_at" | "updated_at" | "items">,
     items: OrderItem[]
-  ): Promise<Order> {
-    const newOrder: Order = {
-      ...order,
-      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-      created_at: new Date().toISOString(),
-      items: items,
-    };
-
+  ): Promise<Order | null> {
     try {
       const { data: orderData, error } = await supabase
         .from("orders")
-        .insert([
-          {
-            id: newOrder.id,
-            customer_name: newOrder.customer_name,
-            customer_email: newOrder.customer_email,
-            customer_phone: newOrder.customer_phone,
-            customer_address: newOrder.customer_address,
-            delivery_lat: newOrder.delivery_lat,
-            delivery_lng: newOrder.delivery_lng,
-            zone_id: newOrder.zone_id,
-            status: newOrder.status,
-            total_amount: newOrder.total_amount,
-            distance_km: newOrder.distance_km,
-            notes: newOrder.notes,
-          },
-        ])
+        .insert([{ ...order, user_id: userId }])
         .select()
         .single();
 
-      if (!error && orderData && items.length > 0) {
+      if (error) throw error;
+
+      if (items.length > 0) {
         const itemRows = items.map((it) => ({
           order_id: orderData.id,
           product_id: it.product_id,
@@ -337,46 +227,36 @@ export const DataService = {
           quantity: it.quantity,
           subtotal: it.subtotal,
         }));
-        await supabase.from("order_items").insert(itemRows);
+        const { error: itemsError } = await supabase.from("order_items").insert(itemRows);
+        if (itemsError) console.warn("order_items insert error:", itemsError);
       }
+
+      return { ...orderData, items };
     } catch (err) {
-      console.warn("Order creation fallback:", err);
+      console.error("createOrder error:", err);
+      return null;
     }
-
-    // Deduct stock in local products
-    const products = getLocalItem<Product[]>("adpromax_products", []);
-    const updatedProducts = products.map((prod) => {
-      const orderItem = items.find((it) => it.product_id === prod.id);
-      if (orderItem) {
-        return {
-          ...prod,
-          stock_quantity: Math.max(0, prod.stock_quantity - orderItem.quantity),
-        };
-      }
-      return prod;
-    });
-    setLocalItem("adpromax_products", updatedProducts);
-
-    const currentOrders = getLocalItem<Order[]>("adpromax_orders", []);
-    const updatedOrders = [newOrder, ...currentOrders];
-    setLocalItem("adpromax_orders", updatedOrders);
-    return newOrder;
   },
 
   async updateOrderStatus(
+    userId: string,
     orderId: string,
     status: Order["status"]
   ): Promise<Order | null> {
     try {
-      await supabase.from("orders").update({ status }).eq("id", orderId);
+      const { data, error } = await supabase
+        .from("orders")
+        .update({ status })
+        .eq("id", orderId)
+        .eq("user_id", userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
     } catch (err) {
-      console.warn("Update status error:", err);
+      console.error("updateOrderStatus error:", err);
+      return null;
     }
-    const current = getLocalItem<Order[]>("adpromax_orders", []);
-    const index = current.findIndex((o) => o.id === orderId);
-    if (index === -1) return null;
-    current[index].status = status;
-    setLocalItem("adpromax_orders", [...current]);
-    return current[index];
   },
 };

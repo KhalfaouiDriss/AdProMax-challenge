@@ -7,7 +7,7 @@ import { X, Package, Layers, AlertCircle } from "lucide-react";
 interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (product: Omit<Product, "id">, zoneIds: string[]) => Promise<void>;
+  onSave: (product: Omit<Product, "id" | "user_id" | "created_at" | "updated_at" | "zone_ids">, zoneIds: string[]) => Promise<void>;
   editingProduct?: Product | null;
   availableZones: DeliveryZone[];
 }

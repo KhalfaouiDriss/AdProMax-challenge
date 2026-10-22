@@ -7,7 +7,7 @@ import { X, MapPin, Sliders, Palette, Check, AlertCircle } from "lucide-react";
 interface ZoneModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (zone: Omit<DeliveryZone, "id" | "created_at">) => Promise<void>;
+  onSave: (zone: Omit<DeliveryZone, "id" | "user_id" | "created_at" | "updated_at">) => Promise<void>;
   editingZone?: DeliveryZone | null;
   currentPinLocation?: { lat: number; lng: number } | null;
   onStartPinSelection: () => void;
