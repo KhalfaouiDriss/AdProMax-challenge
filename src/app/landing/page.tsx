@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Truck, MapPin, Shield, Zap, CheckCircle, ArrowRight } from "lucide-react";
+import { MapPin, Shield, Zap, CheckCircle, ArrowRight } from "lucide-react";
 
 const features = [
   {
@@ -102,7 +102,7 @@ export default function LandingPage() {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                       {[
                         { label: "Active Zones", value: "12", icon: MapPin, color: "#7a3dff" },
-                        { label: "Live Orders", value: "34", icon: Truck, color: "#00d722" },
+                        { label: "Live Orders", value: "34", icon: Zap, color: "#00d722" },
                         { label: "Products", value: "156", icon: CheckCircle, color: "#febc2e" },
                         { label: "Drivers Online", value: "8", icon: Shield, color: "#ff5f57" },
                       ].map((stat) => (
@@ -185,9 +185,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-[4px] bg-[#080808] flex items-center justify-center">
-                <Truck className="w-4 h-4 text-white" />
-              </div>
+              <img src="/logo.svg" alt="AdProMax" className="w-8 h-8" />
               <span className="font-bold text-[#080808]">ADPROMAX</span>
             </div>
             <p className="text-sm text-[#5a5a5a]">

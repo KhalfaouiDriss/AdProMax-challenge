@@ -7,6 +7,11 @@ export const metadata: Metadata = {
   description:
     "Next-generation delivery zone management and order dispatch platform with automated point-in-zone geospatial verification, inventory control, and real-time operations dashboard.",
   authors: [{ name: "AdProMax Logistics Engineering" }],
+  icons: {
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
+  },
 };
 
 export const viewport: Viewport = {

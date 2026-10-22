@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAuth } from "@/lib/auth-context";
-import { Truck, ShieldCheck, LogIn, LogOut, Plus } from "lucide-react";
+import { ShieldCheck, LogIn, LogOut, Plus } from "lucide-react";
 
 interface HeaderProps {
   activeTab: string;
@@ -35,15 +35,17 @@ export default function Header({
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#d8d8d8]">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16">
-          {/* Brand Logo & Wordmark */}
+{/* Brand Logo & Wordmark */}
           <div className="flex items-center gap-4 sm:gap-8">
             <div
               onClick={() => setActiveTab("dashboard")}
               className="flex items-center gap-2 cursor-pointer group"
             >
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[4px] bg-[#080808] flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-transform">
-                <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
+              <img
+                src="/logo.svg"
+                alt="AdProMax"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-[4px] group-hover:scale-105 transition-transform"
+              />
               <div className="flex items-center">
                 <span className="font-bold text-base sm:text-lg tracking-tight text-[#080808]">
                   ADPROMAX

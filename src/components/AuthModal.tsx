@@ -56,10 +56,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   return (
     <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
       <div className="relative w-full max-w-md bg-white rounded-t-2xl sm:rounded-md border border-[#d8d8d8] shadow-2xl overflow-hidden">
-        {/* Mobile drag handle */}
         <div className="w-10 h-1 bg-neutral-300 rounded-full mx-auto mt-2 sm:hidden" />
-
-        {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-[#d8d8d8] bg-[#fafafa]">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-[4px] bg-[#080808] text-white flex items-center justify-center">
@@ -76,10 +73,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
-
-        {/* Form Body */}
         <div className="p-4 sm:p-6 space-y-4 max-h-[85vh] overflow-y-auto">
-          {/* Quick Demo Credentials Banner */}
           <div className="p-3 bg-neutral-50 border border-[#d8d8d8] rounded-[6px] space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#080808] flex items-center gap-1">
@@ -155,7 +149,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
+                  placeholder="************"
                   className="wf-input pl-9 text-xs"
                   required
                 />
@@ -170,21 +164,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               {loading ? "Authenticating..." : isSignUp ? "Create Account" : "Sign In"}
             </button>
           </form>
-
-          {/* <div className="text-center pt-2 border-t border-[#d8d8d8]">
-            <button
-              type="button"
-              onClick={() => {
-                setIsSignUp(!isSignUp);
-                setError(null);
-              }}
-              className="text-xs text-[#5a5a5a] hover:text-[#080808] font-medium"
-            >
-              {isSignUp
-                ? "Already an operator? Sign in"
-                : "Need a new account? Register"}
-            </button> */}
-          </div>
         </div>
       </div>
     </div>
