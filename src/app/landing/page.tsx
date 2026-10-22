@@ -55,7 +55,7 @@ export default function LandingPage() {
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <Link
-                href="/auth"
+                href="/dashboard"
                 className="w-full sm:w-auto px-8 py-3.5 bg-white text-[#080808] font-semibold rounded-[6px] hover:bg-white/90 transition-colors text-center shadow-lg"
               >
                 Start Free Trial
@@ -167,7 +167,7 @@ export default function LandingPage() {
               on-time rates with automated geofence verification.
             </p>
             <Link
-              href="/auth"
+              href="/dashboard"
               className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#7a3dff] text-white font-semibold rounded-[6px] hover:bg-[#6b2fff] transition-colors shadow-lg"
             >
               Get Started Free
